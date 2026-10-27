@@ -24,13 +24,24 @@ einer Zone eindeutig sein. Entwürfe heißen jetzt `draft-<id>`, öffentliche Mi
 ## Browser-Verbindung ohne veröffentlichten Token
 
 Unter Einstellungen wird der vorhandene, auf `https://admin.workbadge.de` beschränkte
-Web-API-Token für den geöffneten Tab eingegeben. Er wird nur an Apples API gesendet;
-kein Token ist im Repository, in Cookies, localStorage oder sessionStorage hinterlegt.
-Nach Schließen oder Neuladen muss der Web-Token erneut eingegeben werden.
-Die Apple-Anmeldung erfolgt im selben Tab. Ihr kurzlebiger Rückgabeparameter wird
-vor dem Laden externer Ressourcen aus der Adresszeile entfernt und nur im Arbeitsspeicher
-an CloudKit JS übergeben. In der CloudKit-Konsole ist URL Redirect auf
+Web-API-Token eingegeben und die Umgebung gewählt (Development = aus Xcode installierte
+App, Production = App Store/TestFlight). Token und Umgebung liegen nur im
+`sessionStorage` dieses Tabs: Sie überstehen die Apple-Weiterleitung im selben Tab und
+werden beim Schließen des Tabs oder mit „Sitzung trennen“ gelöscht. Nicht im Repository,
+nicht in Cookies oder localStorage.
+Die Apple-Anmeldung erfolgt im selben Tab. Apple liefert die Sitzung als `ckWebAuthToken`
+und `ckSession`; beide werden vor dem Laden externer Ressourcen aus der Adresszeile entfernt
+und nur im Arbeitsspeicher an CloudKit JS übergeben. Nach einem Neuladen ist daher eine neue
+Apple-Anmeldung nötig. In der CloudKit-Konsole ist URL Redirect auf
 `https://admin.workbadge.de/` eingestellt.
+
+Fehlt dem angemeldeten Konto die Rolle WorkBadgeAdmin, zeigt die Seite die eigene
+CloudKit-Nutzer-ID und die Umgebung an, in der die Rolle zuzuweisen ist; sie prüft danach
+alle 30 Sekunden erneut.
+
+Speichern: Neue Datensätze werden angelegt, bestehende mit Änderungskennung vollständig
+ersetzt (`replace`). Leere Start-/Endzeiten werden weggelassen statt als `null` gesendet;
+eine entfernte Endzeit verschwindet dadurch auch in CloudKit.
 
 Vor dem Anmelden prüft die Seite den anonymen öffentlichen Abruf und die Verweigerung
 anonymer Entwurfsabfragen. Nach der Anmeldung werden zusätzlich beide Datensatztypen
@@ -82,7 +93,7 @@ Auf einem Mac mit Xcode bauen/signieren und auf dem iPhone installieren.
 
 ## Nachweis
 
-`node test-announcements.cjs` prüft den tatsächlichen Admin-Code mit einem CloudKit-Modell,
+`node test-announcements.cjs` und `node test-signin-flow.cjs` prüfen den tatsächlichen Admin-Code mit einem CloudKit-Modell,
 das globale Datensatz-IDs und Versionskonflikte erzwingt: Entwurf, Veröffentlichung,
 Bearbeitung, Archivierung, Löschung, Rechtefehler und fehlerhafte Daten.
 Dies ist kein Test gegen Apples Server. Zusätzliche XCTest-Fälle im App-Projekt prüfen
