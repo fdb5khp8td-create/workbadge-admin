@@ -5,8 +5,12 @@
   <meta name="referrer" content="no-referrer" />
   <script>
   // Consume Apple's short-lived callback before loading fonts or other resources.
-  { const callbackURL=new URL(location.href); const returned=callbackURL.searchParams.get('ckWebAuthToken');
-    if(returned){window.WORKBADGE_RETURNED_AUTH=returned;callbackURL.searchParams.delete('ckWebAuthToken');
+  // Apple returns the same session value as ckWebAuthToken and ckSession: remove both.
+  { const callbackURL=new URL(location.href);
+    const returned=callbackURL.searchParams.get('ckWebAuthToken')||callbackURL.searchParams.get('ckSession');
+    if(returned)window.WORKBADGE_RETURNED_AUTH=returned;
+    if(callbackURL.searchParams.has('ckWebAuthToken')||callbackURL.searchParams.has('ckSession')){
+      callbackURL.searchParams.delete('ckWebAuthToken');callbackURL.searchParams.delete('ckSession');
       history.replaceState(null,'',callbackURL.pathname+callbackURL.search+callbackURL.hash);}}
   </script>
   <meta name="robots" content="noindex,nofollow" />
@@ -47,11 +51,11 @@
       </div>
       <div class="view hidden" id="view-messages"><div class="headingline"><div><div class="eyebrow">NACHRICHTENMANAGEMENT</div><h1>Alle Nachrichten</h1><p>Bearbeite, veröffentliche oder pausiere deine Mitteilungen.</p></div><button class="primary-button" data-nav="compose">＋ Neue Nachricht</button></div><div class="panel message-panel"><div class="toolbar"><div class="tabs" id="filterTabs"><button class="tab active" data-filter="all">Alle</button><button class="tab" data-filter="live">Aktiv</button><button class="tab" data-filter="scheduled">Geplant</button><button class="tab" data-filter="draft">Entwürfe</button><button class="tab" data-filter="archived">Archiv</button></div><div class="searchbox">⌕ <input id="messageSearch" placeholder="Nachricht suchen ..." aria-label="Nachrichten suchen" /></div></div><div class="table-scroll"><table><thead><tr><th>NACHRICHT</th><th>ZIELGRUPPE</th><th>STATUS</th><th>START</th><th>AKTION</th></tr></thead><tbody id="messageRows"></tbody></table></div><div id="emptyRows" class="empty-state hidden">Keine Nachrichten gefunden.</div></div></div>
       <div class="view hidden" id="view-compose"><div class="headingline composeheading"><div><div class="eyebrow">NACHRICHTENEDITOR</div><h1 id="composeTitle">Neue Nachricht</h1><p>Gestalte einen Hinweis und sieh sofort, wie er in der App wirkt.</p></div><button class="subtle-button" data-nav="messages">← Zur Übersicht</button></div><div class="editor-grid"><div class="panel form-panel"><div class="form-section-title"><span class="section-num">01</span><div><h3>Nachrichteninhalt</h3><p>Was sollen deine Nutzer erfahren?</p></div></div><div class="field"><label for="f-title">Titel <span id="titleCounter">0 / 80</span></label><input id="f-title" maxlength="80" placeholder="z. B. Neues Update verfügbar" /></div><div class="field"><label for="f-body">Nachricht <span id="bodyCounter">0 / 320</span></label><textarea id="f-body" maxlength="320" rows="4" placeholder="Schreibe hier deine Nachricht ..."></textarea></div><div class="field-row"><div class="field"><label for="f-type">Nachrichtentyp</label><select id="f-type"><option value="news">✦ Neuigkeiten</option><option value="update">↗ Update</option><option value="maintenance">⚙ Wartung</option><option value="important">! Wichtig</option></select></div><div class="field"><label for="f-audience">Zielgruppe</label><select id="f-audience"><option value="all">Alle Nutzer</option><option value="beta">Beta-Tester</option></select></div></div><div class="form-divider"></div><div class="form-section-title"><span class="section-num">02</span><div><h3>Darstellung & Zeitplan</h3><p>Bestimme, wann und wie der Hinweis erscheint.</p></div></div><div class="field-row"><div class="field"><label for="f-placement">Darstellung</label><select id="f-placement"><option value="banner">Banner oben</option><option value="card">Hinweiskarte</option></select></div><div class="field"><label for="f-dismiss">Nach dem Schließen</label><select id="f-dismiss"><option value="once">Nicht erneut anzeigen</option><option value="session">In nächster Sitzung wieder</option></select></div></div><div class="field-row"><div class="field"><label for="f-start">Sichtbar ab <small>(optional)</small></label><input id="f-start" type="datetime-local" /></div><div class="field"><label for="f-end">Sichtbar bis <small>(optional)</small></label><input id="f-end" type="datetime-local" /></div></div><div class="field-row"><div class="field"><label for="f-cta">Buttontext <small>(optional)</small></label><input id="f-cta" maxlength="35" placeholder="Mehr erfahren" /></div><div class="field"><label for="f-url">Link <small>(https, optional)</small></label><input id="f-url" type="url" placeholder="https://workbadge.de/" /></div></div><div class="form-actions"><button class="delete-button hidden" id="deleteBtn">Löschen</button><button class="secondary-button" id="saveDraft">Entwurf speichern</button><button class="primary-button" id="publishBtn">✦ Veröffentlichen</button></div><p class="form-footnote">Freigegebene Nachrichten sind öffentlich abrufbar. Start und Ende steuern die Anzeige; für vertrauliche Inhalte ist dieser Kanal ungeeignet.</p></div><div class="preview-column"><div class="preview-title"><div><h3>Live-Vorschau</h3><p>So könnte es auf dem iPhone aussehen</p></div><span class="live-tag">● LIVE PREVIEW</span></div><div class="phone"><div class="phone-screen"><div class="phone-status"><span>9:41</span><div class="island"></div><span>●● ▰</span></div><div class="phone-title"><div class="phone-logo">☺</div><b>WorkBadge</b><span>⚙</span></div><div class="preview-notice" id="phoneBanner"><div class="banner-header"><span id="phoneKind">✦ &nbsp; NEWS</span><span>×</span></div><strong id="phoneTitle">Deine Nachricht erscheint hier</strong><p id="phoneBody">Erstelle links eine Nachricht und sieh dir direkt die Vorschau an.</p><span id="phoneCTA" class="phone-cta hidden">Mehr erfahren ↗</span></div><div class="phone-label">DEIN NAMENSSCHILD</div><div class="phone-badge"><small>HELLO, MY NAME IS</small><strong>Max Mustermann</strong><span>😊 Im Büro</span></div><div class="phone-device">◉ &nbsp; Verbunden <span>Akku 82 %</span></div><button class="phone-send" disabled>Auf Schild übertragen</button><div class="phone-bottom"><span>⌂<small>Home</small></span><span>▤<small>Vorlagen</small></span><span>⚙<small>Optionen</small></span></div></div></div><div class="preview-info">ⓘ &nbsp; Dies ist eine Designvorschau. Die iPhone-App wird nicht verändert.</div></div></div></div>
-      <div class="view hidden" id="view-settings"><div class="headingline"><div><div class="eyebrow">VERBINDUNG & SICHERHEIT</div><h1>Einstellungen</h1><p>Der technische Status deiner Nachrichtenzentrale.</p></div></div><div class="panel setting-card" id="connectionSetup" style="margin-bottom:18px"><h3>CloudKit für diese Sitzung verbinden</h3><p>Der Web-Token bleibt nur in diesem geöffneten Browser-Tab. Er wird nicht im Repository oder Browserspeicher abgelegt. Apple-Anmeldung und CloudKit-Rollen schützen den Zugriff.</p><form id="cloudkitSessionForm" autocomplete="off"><div class="field"><label for="cloudkitSessionToken">CloudKit-Web-Token</label><input id="cloudkitSessionToken" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" required maxlength="64" aria-describedby="sessionTokenHint"></div><p id="sessionTokenHint">Verbindung zur Entwicklungsumgebung für den Test mit einer Xcode-App.</p><button type="submit" class="primary-button" id="cloudkitSessionConnect">Mit CloudKit verbinden</button><span id="cloudkitSessionStatus" role="status" style="margin-left:12px"></span></form><button type="button" id="publicReadCheck" class="secondary-button">Öffentlichen App-Abruf prüfen</button><p id="publicReadResult" role="status"></p></div><div class="settings-grid"><div class="panel setting-card"><span class="setting-symbol">◈</span><h3>Apple CloudKit</h3><p id="cloudkitStatusText">Noch nicht verbunden. Die Einrichtung ist vorbereitet; es wurden keine Nachrichten veröffentlicht.</p><div class="settings-badge" id="connectionStatus">● Nicht verbunden</div><button class="secondary-button" id="reloadBtn">Verbindung neu prüfen</button></div><div class="panel setting-card"><span class="setting-symbol">♙</span><h3>Administrator-Zugang</h3><p>Apple-Anmeldung und die CloudKit-Rolle WorkBadgeAdmin schützen den Zugriff. Nur dein zugewiesenes iCloud-Konto soll schreiben dürfen.</p><button class="secondary-button hidden" id="logoutBtn">Abmelden</button><div class="settings-badge">🔒 Rechte noch zu prüfen</div></div><div class="panel setting-card"><span class="setting-symbol">⇩</span><h3>Datensicherung</h3><p>Exportiere deine Nachrichten in eine JSON-Datei, beispielsweise vor Änderungen an deiner Datenbank.</p><button class="secondary-button" id="exportBtn">JSON exportieren ↓</button></div><div class="panel setting-card"><span class="setting-symbol">ℹ</span><h3>App-Schnittstelle</h3><p>Das Dokument <code>docs/Einrichtung-und-Status.md</code> beschreibt die spätere iOS-Anbindung. Noch ist keine App verbunden.</p><div class="settings-badge">App-Anbindung vorbereitet</div></div></div></div>
+      <div class="view hidden" id="view-settings"><div class="headingline"><div><div class="eyebrow">VERBINDUNG & SICHERHEIT</div><h1>Einstellungen</h1><p>Der technische Status deiner Nachrichtenzentrale.</p></div></div><div class="panel setting-card" id="connectionSetup" style="margin-bottom:18px"><h3>CloudKit für diese Sitzung verbinden</h3><p>Der Web-Token bleibt nur in diesem Browser-Tab (Sitzungsspeicher, gelöscht beim Schließen des Tabs), damit die Apple-Anmeldung nach der Weiterleitung automatisch weiterläuft. Er steht nicht im Repository. Apple-Anmeldung und CloudKit-Rollen schützen den Zugriff.</p><form id="cloudkitSessionForm" autocomplete="off"><div class="field-row"><div class="field"><label for="cloudkitSessionToken">CloudKit-Web-Token</label><input id="cloudkitSessionToken" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" required maxlength="64" aria-describedby="sessionTokenHint"></div><div class="field"><label for="cloudkitEnvironment">Umgebung</label><select id="cloudkitEnvironment" aria-describedby="sessionTokenHint"><option value="development">Development · Xcode-Testbuild</option><option value="production">Production · App Store / TestFlight</option></select></div></div><p id="sessionTokenHint">Die App liest dieselbe Umgebung, mit der sie signiert ist: aus Xcode installiert = Development, aus App Store oder TestFlight = Production.</p><button type="submit" class="primary-button" id="cloudkitSessionConnect">Mit CloudKit verbinden</button><button type="button" class="secondary-button hidden" id="cloudkitSessionEnd" style="margin-left:8px">Sitzung trennen</button><span id="cloudkitSessionStatus" role="status" style="margin-left:12px"></span></form><button type="button" id="publicReadCheck" class="secondary-button">Öffentlichen App-Abruf prüfen</button><p id="publicReadResult" role="status"></p></div><div class="settings-grid"><div class="panel setting-card"><span class="setting-symbol">◈</span><h3>Apple CloudKit</h3><p id="cloudkitStatusText">Noch nicht verbunden. Die Einrichtung ist vorbereitet; es wurden keine Nachrichten veröffentlicht.</p><div class="settings-badge" id="connectionStatus">● Nicht verbunden</div><button class="secondary-button" id="reloadBtn">Verbindung neu prüfen</button></div><div class="panel setting-card"><span class="setting-symbol">♙</span><h3>Administrator-Zugang</h3><p>Apple-Anmeldung und die CloudKit-Rolle WorkBadgeAdmin schützen den Zugriff. Nur dein zugewiesenes iCloud-Konto soll schreiben dürfen.</p><button class="secondary-button hidden" id="logoutBtn">Abmelden</button><div class="settings-badge">🔒 Rechte noch zu prüfen</div></div><div class="panel setting-card"><span class="setting-symbol">⇩</span><h3>Datensicherung</h3><p>Exportiere deine Nachrichten in eine JSON-Datei, beispielsweise vor Änderungen an deiner Datenbank.</p><button class="secondary-button" id="exportBtn">JSON exportieren ↓</button></div><div class="panel setting-card"><span class="setting-symbol">ℹ</span><h3>App-Schnittstelle</h3><p>Die WorkBadge-App liest ab Version 1.34.1 veröffentlichte Nachrichten direkt aus CloudKit, sobald sie geöffnet wird. Sie sieht nur Nachrichten der Umgebung, mit der sie gebaut wurde.</p><div class="settings-badge">App ab 1.34.1 · CloudKit</div></div></div></div>
     </div>
   </main>
 </div>
-<div class="auth-overlay hidden" id="authOverlay"><div class="auth-card"><div class="logo auth-logo"><span class="logobadge"><span class="logosmile">☺</span></span></div><h2>WorkBadge Admin</h2><p>Melde dich an, um deine Mitteilungen sicher zu verwalten.</p><div id="apple-sign-in-button" class="hidden"></div><a id="appleSameTabSignIn" class="primary-button hidden" style="display:block;text-align:center;text-decoration:none" referrerpolicy="no-referrer">Mit Apple anmelden</a><div id="apple-sign-out-button"></div><p id="cloudUser"></p><div class="auth-error hidden" id="authError" role="alert"></div><small>Nur die Apple-Anmeldung verarbeitet deine Zugangsdaten. CloudKit-Rollen kontrollieren den Datenzugriff.</small></div></div>
+<div class="auth-overlay hidden" id="authOverlay"><div class="auth-card"><div class="logo auth-logo"><span class="logobadge"><span class="logosmile">☺</span></span></div><h2>WorkBadge Admin</h2><p>Melde dich mit dem Apple-Account an, der in CloudKit die Rolle WorkBadgeAdmin hat. Du wirst zu Apple weitergeleitet und landest danach automatisch wieder hier.</p><p id="authEnvironment" style="margin:-14px 0 18px;font-weight:700"></p><div id="apple-sign-in-button" class="hidden"></div><a id="appleSameTabSignIn" class="primary-button hidden" style="display:block;text-align:center;text-decoration:none" referrerpolicy="no-referrer">Mit Apple anmelden</a><div id="apple-sign-out-button"></div><p id="cloudUser" style="word-break:break-all;user-select:all"></p><div class="auth-error hidden" id="authError" role="alert"></div><button type="button" class="secondary-button" id="authEndSession">Sitzung trennen</button><small>Nur die Apple-Anmeldung verarbeitet deine Zugangsdaten. CloudKit-Rollen kontrollieren den Datenzugriff.</small></div></div>
 <div class="toast hidden" id="toast" role="status"></div>
 <div class="confirm-modal hidden" id="confirmModal"><div class="confirm-box"><h3 id="confirmTitle">Nachricht löschen?</h3><p id="confirmText">Diese Aktion kann nicht rückgängig gemacht werden.</p><div class="confirm-actions"><button class="secondary-button" id="confirmCancel">Abbrechen</button><button class="danger-button" id="confirmAccept">Löschen</button></div></div></div>
 <script>
@@ -99,13 +103,17 @@ function toRecordFields(message) {
   for (const k of TEXT_FIELDS) fields[k]={value:m[k],type:'STRING'};
   fields.text={value:m.body,type:'STRING'};
   fields.priority={value:PRIORITIES[m.kind],type:'INT64'};
-  for (const k of DATES) fields[k]={value:m[k] ? Date.parse(m[k]) : null,type:'TIMESTAMP'};
+  // Optional dates are omitted, never sent as null. Existing records are replaced as a whole,
+  // so an omitted date is cleared in CloudKit.
+  for (const k of DATES) if (m[k]) fields[k]={value:Date.parse(m[k]),type:'TIMESTAMP'};
   return fields;
 }
 
 function fromRecord(record) {
   const m={};
   for (const k of TEXT_FIELDS) m[k]=record.fields?.[k]?.value;
+  // An empty button may come back from CloudKit as a missing field.
+  for (const k of ['ctaLabel','ctaUrl']) if (m[k]==null) m[k]='';
   m.body=record.fields?.text?.value;
   for (const k of DATES) {
     const value=record.fields?.[k]?.value;
@@ -155,8 +163,12 @@ function createMessageRepository(db,{writesEnabled=false}={}) {
     // Record IDs are unique across record types in a CloudKit zone.
     const recordName=type===ADMIN_TYPE ? 'draft-'+m.id : m.id;
     const record={recordName,recordType:type,fields:toRecordFields(m)};
-    if (tag) record.recordChangeTag=tag;
-    const r=checked(await db.saveRecords(record));
+    let r;
+    if (tag) {
+      // replace keeps the change-tag conflict check and clears fields that are no longer set.
+      record.recordChangeTag=tag;
+      r=checked(await db.newRecordsBatch().replace(record).commit());
+    } else r=checked(await db.saveRecords(record));
     const saved=r.records?.[0];
     if (!saved || saved.recordName!==recordName) throw new Error('CloudKit hat die Speicherung nicht bestätigt.');
     return saved;
@@ -302,9 +314,36 @@ function askConfirm(title,description,action,button='Bestätigen'){$('confirmTit
 function closeConfirm(){$('confirmModal').classList.add('hidden');modalAction=null;}
 async function archiveOrDraft(){const prev=messages.find(x=>x.id===editing.id);if(prev?.status==='published'){askConfirm('Nachricht archivieren?','Die Nachricht ist dann nicht mehr in der App sichtbar.',async()=>{const saved=formData('archived');if(saved)await persist(saved);},'Archivieren');return;}const m=formData('draft');if(m)await persist(m);}
 function exportData(){const contents=JSON.stringify({schemaVersion:1,exportedAt:new Date().toISOString(),announcements:messages},null,2);const blob=new Blob([contents],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='workbadge-nachrichten-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2500);notify('Nachrichten exportiert.');}
-function initEvents(){all('[data-nav]').forEach(btn=>btn.addEventListener('click',()=>{if(btn.dataset.nav==='compose')editing.id=null;showView(btn.dataset.nav);}));$('messageSearch').addEventListener('input',renderTable);all('.tab').forEach(t=>t.addEventListener('click',()=>{all('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');filter=t.dataset.filter;renderTable();}));document.addEventListener('click',e=>{const item=e.target.closest('[data-edit]');if(item)editMessage(item.dataset.edit);});all('.form-panel input,.form-panel select,.form-panel textarea').forEach(el=>el.addEventListener('input',updatePreview));$('publishBtn').addEventListener('click',async()=>{const m=formData('published');if(!m)return;askConfirm('Nachricht veröffentlichen?','Bei bestehender App-Anbindung ist diese Mitteilung für die gewählte Zielgruppe ab dem Startzeitpunkt abrufbar.',()=>persist(m),'Veröffentlichen');});$('saveDraft').addEventListener('click',archiveOrDraft);$('deleteBtn').addEventListener('click',()=>{const id=editing.id;if(!id)return;askConfirm('Nachricht endgültig löschen?','Diese Nachricht wird vollständig aus der Datenbank entfernt. Dieser Schritt kann nicht rückgängig gemacht werden.',async()=>{try{if(!remote)throw new Error('CloudKit ist nicht verbunden.');await remote.remove(id);editing.id=null;showView('messages');notify('Nachricht gelöscht.');}catch(e){notify('Löschen fehlgeschlagen: '+e.message)}},'Löschen');});$('confirmCancel').addEventListener('click',closeConfirm);$('confirmAccept').addEventListener('click',async()=>{const fn=modalAction;closeConfirm();if(fn)await fn();});$('confirmModal').addEventListener('click',e=>{if(e.target===$('confirmModal'))closeConfirm();});$('infoBtn').addEventListener('click',()=>notify('CloudKit-Einrichtung vorbereitet. Die iPhone-App ist noch nicht angebunden.'));$('userBtn').addEventListener('click',()=>showView('settings'));$('exportBtn').addEventListener('click',exportData);$('reloadBtn').addEventListener('click',()=>{if(remote)remote.refresh();else notify('Bitte zuerst CloudKit für diese Sitzung verbinden.');});$('logoutBtn').addEventListener('click',async()=>{if(remote)await remote.signOut();});}
-initEvents();resetEditor();initCloudKit();setInterval(()=>{renderAll();},60000);
-// Session memory only: no localStorage, sessionStorage, URL token or network submission to GitHub.
+function initEvents(){all('[data-nav]').forEach(btn=>btn.addEventListener('click',()=>{if(btn.dataset.nav==='compose')editing.id=null;showView(btn.dataset.nav);}));$('messageSearch').addEventListener('input',renderTable);all('.tab').forEach(t=>t.addEventListener('click',()=>{all('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');filter=t.dataset.filter;renderTable();}));document.addEventListener('click',e=>{const item=e.target.closest('[data-edit]');if(item)editMessage(item.dataset.edit);});all('.form-panel input,.form-panel select,.form-panel textarea').forEach(el=>el.addEventListener('input',updatePreview));$('publishBtn').addEventListener('click',async()=>{const m=formData('published');if(!m)return;askConfirm('Nachricht veröffentlichen?','Bei bestehender App-Anbindung ist diese Mitteilung für die gewählte Zielgruppe ab dem Startzeitpunkt abrufbar.',()=>persist(m),'Veröffentlichen');});$('saveDraft').addEventListener('click',archiveOrDraft);$('deleteBtn').addEventListener('click',()=>{const id=editing.id;if(!id)return;askConfirm('Nachricht endgültig löschen?','Diese Nachricht wird vollständig aus der Datenbank entfernt. Dieser Schritt kann nicht rückgängig gemacht werden.',async()=>{try{if(!remote)throw new Error('CloudKit ist nicht verbunden.');await remote.remove(id);editing.id=null;showView('messages');notify('Nachricht gelöscht.');}catch(e){notify('Löschen fehlgeschlagen: '+e.message)}},'Löschen');});$('confirmCancel').addEventListener('click',closeConfirm);$('confirmAccept').addEventListener('click',async()=>{const fn=modalAction;closeConfirm();if(fn)await fn();});$('confirmModal').addEventListener('click',e=>{if(e.target===$('confirmModal'))closeConfirm();});$('infoBtn').addEventListener('click',()=>notify('Veröffentlichte Nachrichten erscheinen in der App ab Version 1.34.1 beim nächsten Öffnen – in der Umgebung, die oben rechts angezeigt wird.'));$('userBtn').addEventListener('click',()=>showView('settings'));$('exportBtn').addEventListener('click',exportData);$('reloadBtn').addEventListener('click',()=>{if(remote)remote.refresh();else notify('Bitte zuerst CloudKit für diese Sitzung verbinden.');});$('logoutBtn').addEventListener('click',async()=>{if(remote)await remote.signOut();});}
+initEvents();resetEditor();
+// The domain-restricted web token is kept per tab in sessionStorage so the same-tab Apple
+// sign-in can finish after Apple redirects back. It is never committed or kept in localStorage.
+// The Apple sign-in session itself stays in memory only.
+const SESSION_KEY='workbadge.cloudkit.session.v1';
+function envLabel(env){return env==='production'?'Production':'Development';}
+function readSession(){
+  try{const s=JSON.parse(sessionStorage.getItem(SESSION_KEY)||'null');
+    if(s&&/^[a-fA-F0-9]{64}$/.test(s.apiToken)&&['development','production'].includes(s.environment))return s;}
+  catch(e){}
+  return null;
+}
+function storeSession(s){try{sessionStorage.setItem(SESSION_KEY,JSON.stringify(s));}catch(e){}}
+function endSession(){try{sessionStorage.removeItem(SESSION_KEY);}catch(e){}location.replace(location.pathname);}
+function applySession(s){
+  window.WORKBADGE_CLOUDKIT_CONFIG=Object.freeze({...window.WORKBADGE_CLOUDKIT_CONFIG,
+    enabled:true,apiToken:s.apiToken,environment:s.environment,writesEnabled:true});
+  $('cloudkitEnvironment').value=s.environment;$('cloudkitSessionEnd').classList.remove('hidden');
+}
+function accessMessage(error,user,env){
+  const code=(String(error?.message||'').match(/\(([A-Z_]+)\)/)||[])[1]||'';
+  if(['ACCESS_DENIED','PERMISSION_DENIED'].includes(code))
+    return 'Angemeldet, aber dieses Apple-Konto darf in '+envLabel(env)+' noch keine Nachrichten verwalten. '+
+      'In der CloudKit Console ('+envLabel(env)+') dem Nutzer '+(user?.userRecordName||'oben')+
+      ' die Rolle WorkBadgeAdmin geben. Die Seite prüft danach alle 30 Sekunden automatisch erneut.';
+  return 'Nachrichtenzugriff nicht bestätigt: '+error.message;
+}
+$('cloudkitSessionEnd').addEventListener('click',endSession);
+$('authEndSession').addEventListener('click',endSession);
 $('publicReadCheck').addEventListener('click',async()=>{
   safetyCheckPassed=false;$('publicReadCheck').disabled=true;$('publicReadResult').textContent='Abruf wird geprüft …';
   try{const count=await verifyPublicRead(window.WORKBADGE_CLOUDKIT_CONFIG);safetyCheckPassed=true;
@@ -317,17 +356,19 @@ $('cloudkitSessionForm').addEventListener('submit',async event=>{
   const input=$('cloudkitSessionToken'), token=input.value.trim();
   if(!/^[a-fA-F0-9]{64}$/.test(token)){notify('Bitte den vollständigen CloudKit-Web-Token eintragen.');return;}
   input.value='';
+  const session={apiToken:token,environment:$('cloudkitEnvironment').value==='production'?'production':'development'};
   $('cloudkitSessionConnect').disabled=true;
   $('cloudkitSessionStatus').textContent='Verbindung wird geprüft …';
-  window.WORKBADGE_CLOUDKIT_CONFIG=Object.freeze({...window.WORKBADGE_CLOUDKIT_CONFIG,
-    enabled:true,apiToken:token,writesEnabled:true});
+  applySession(session);
   try{
     const count=await verifyPublicRead(window.WORKBADGE_CLOUDKIT_CONFIG);
+    storeSession(session);
     $('publicReadResult').textContent='Öffentlicher App-Abruf bestätigt: '+count+' Nachrichten. Entwürfe sind geschützt.';
     await initCloudKit();
-    $('cloudkitSessionStatus').textContent='Sitzung eingerichtet. Apple-Anmeldung und Rechteprüfung folgen.';
+    $('cloudkitSessionStatus').textContent='Verbunden mit '+envLabel(session.environment)+'. Jetzt mit Apple anmelden.';
   }catch(error){
     $('cloudkitSessionStatus').textContent=error.message;
+  }finally{
     $('cloudkitSessionConnect').disabled=false;
   }
 });
@@ -339,26 +380,28 @@ async function initCloudKit(){
   const writes=(enabled)=>['publishBtn','saveDraft','deleteBtn'].forEach(id=>$(id).disabled=!enabled);
   writes(false);
   $('modePill').textContent='EINRICHTUNG OFFEN';
-  $('userState').textContent='Apple CloudKit · Development';
+  $('userState').textContent='Apple CloudKit · '+envLabel(config?.environment);
   $('cloudkitStatusText').textContent='Noch nicht verbunden. Keine Demo-Nachrichten und keine Veröffentlichung.';
   if(!config?.enabled){return;}
   isCloud=true;$('authOverlay').classList.remove('hidden');
   $('modePill').textContent='CLOUDKIT · '+config.environment.toUpperCase();
+  $('authEnvironment').textContent='Umgebung: '+envLabel(config.environment);
   try{
     remote=await connectCloudKit(config);
     remote.onAuth(user=>{
       if(unsubscribe){unsubscribe();unsubscribe=null;}
       writes(false);messages=[];renderAll();$('authOverlay').classList.remove('hidden');
-      $('cloudUser').textContent=user?.userRecordName ? 'CloudKit-Nutzer-ID: '+user.userRecordName : '';
+      $('cloudUser').textContent=user?.userRecordName ? 'Deine CloudKit-Nutzer-ID: '+user.userRecordName : '';
+      if(user)$('appleSameTabSignIn').classList.add('hidden');
       $('logoutBtn').classList.toggle('hidden',!user);
       if(user){
         $('authError').classList.add('hidden');
         $('connectionStatus').textContent='● Berechtigungen werden geprüft';
         unsubscribe=remote.subscribe(async rows=>{
-          messages=rows;renderAll();$('authOverlay').classList.add('hidden');
-          $('userState').textContent='iCloud · Nachrichtenverwaltung';
+          messages=rows;renderAll();$('authOverlay').classList.add('hidden');$('authError').classList.add('hidden');
+          $('userState').textContent='iCloud · '+envLabel(config.environment);
           $('connectionStatus').textContent=config.writesEnabled?'● CloudKit verbunden':'● CloudKit lesend verbunden';
-          $('cloudkitStatusText').textContent='Apple-Anmeldung und Abruf erfolgreich. '+(config.writesEnabled?'Schreibzugriff aktiviert.':'Schreibzugriff bleibt bis zum Sicherheitstest gesperrt.');
+          $('cloudkitStatusText').textContent='Apple-Anmeldung und Abruf erfolgreich ('+envLabel(config.environment)+'). '+(config.writesEnabled?'Schreibzugriff aktiviert.':'Schreibzugriff bleibt bis zum Sicherheitstest gesperrt.');
           try{
             if(!safetyCheckPassed){await verifyPublicRead(config);safetyCheckPassed=true;}
             writes(Boolean(config.writesEnabled)&&safetyCheckPassed);
@@ -370,7 +413,7 @@ async function initCloudKit(){
         },error=>{
           writes(false);messages=[];renderAll();$('authOverlay').classList.remove('hidden');
           $('connectionStatus').textContent='● Zugriff nicht bestätigt';
-          $('authError').textContent='Nachrichtenzugriff nicht bestätigt: '+error.message;
+          $('authError').textContent=accessMessage(error,user,config.environment);
           $('authError').classList.remove('hidden');
         });
       }else{
@@ -381,6 +424,17 @@ async function initCloudKit(){
       }
     });
   }catch(error){$('authError').textContent=error.message;$('authError').classList.remove('hidden');$('connectionStatus').textContent='● Verbindung fehlgeschlagen';}
+}
+
+// Start: resume this tab's session, e.g. right after Apple's sign-in redirect.
+{
+  const saved=readSession();
+  if(saved){applySession(saved);}
+  else if(window.WORKBADGE_RETURNED_AUTH){
+    showView('settings');
+    $('cloudkitSessionStatus').textContent='Apple-Anmeldung ist zurück. Bitte den Web-Token noch einmal eintragen, um sie abzuschließen.';
+  }
+  initCloudKit();setInterval(()=>{renderAll();},60000);
 }
 
 </script>
