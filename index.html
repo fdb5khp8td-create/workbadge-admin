@@ -321,8 +321,15 @@ $('cloudkitSessionForm').addEventListener('submit',async event=>{
   $('cloudkitSessionStatus').textContent='Verbindung wird geprüft …';
   window.WORKBADGE_CLOUDKIT_CONFIG=Object.freeze({...window.WORKBADGE_CLOUDKIT_CONFIG,
     enabled:true,apiToken:token,writesEnabled:true});
-  await initCloudKit();
-  $('cloudkitSessionStatus').textContent='Sitzung eingerichtet. Apple-Anmeldung und Rechteprüfung folgen.';
+  try{
+    const count=await verifyPublicRead(window.WORKBADGE_CLOUDKIT_CONFIG);
+    $('publicReadResult').textContent='Öffentlicher App-Abruf bestätigt: '+count+' Nachrichten. Entwürfe sind geschützt.';
+    await initCloudKit();
+    $('cloudkitSessionStatus').textContent='Sitzung eingerichtet. Apple-Anmeldung und Rechteprüfung folgen.';
+  }catch(error){
+    $('cloudkitSessionStatus').textContent=error.message;
+    $('cloudkitSessionConnect').disabled=false;
+  }
 });
 
 
