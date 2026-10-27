@@ -2,6 +2,13 @@
 <html lang="de">
 <head>
   <meta charset="utf-8" />
+  <meta name="referrer" content="no-referrer" />
+  <script>
+  // Consume Apple's short-lived callback before loading fonts or other resources.
+  { const callbackURL=new URL(location.href); const returned=callbackURL.searchParams.get('ckWebAuthToken');
+    if(returned){window.WORKBADGE_RETURNED_AUTH=returned;callbackURL.searchParams.delete('ckWebAuthToken');
+      history.replaceState(null,'',callbackURL.pathname+callbackURL.search+callbackURL.hash);}}
+  </script>
   <meta name="robots" content="noindex,nofollow" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#0c3029" />
@@ -44,7 +51,7 @@
     </div>
   </main>
 </div>
-<div class="auth-overlay hidden" id="authOverlay"><div class="auth-card"><div class="logo auth-logo"><span class="logobadge"><span class="logosmile">☺</span></span></div><h2>WorkBadge Admin</h2><p>Melde dich an, um deine Mitteilungen sicher zu verwalten.</p><div id="apple-sign-in-button"></div><div id="apple-sign-out-button"></div><p id="cloudUser"></p><div class="auth-error hidden" id="authError" role="alert"></div><small>Nur die Apple-Anmeldung verarbeitet deine Zugangsdaten. CloudKit-Rollen kontrollieren den Datenzugriff.</small></div></div>
+<div class="auth-overlay hidden" id="authOverlay"><div class="auth-card"><div class="logo auth-logo"><span class="logobadge"><span class="logosmile">☺</span></span></div><h2>WorkBadge Admin</h2><p>Melde dich an, um deine Mitteilungen sicher zu verwalten.</p><div id="apple-sign-in-button" class="hidden"></div><a id="appleSameTabSignIn" class="primary-button hidden" style="display:block;text-align:center;text-decoration:none" referrerpolicy="no-referrer">Mit Apple anmelden</a><div id="apple-sign-out-button"></div><p id="cloudUser"></p><div class="auth-error hidden" id="authError" role="alert"></div><small>Nur die Apple-Anmeldung verarbeitet deine Zugangsdaten. CloudKit-Rollen kontrollieren den Datenzugriff.</small></div></div>
 <div class="toast hidden" id="toast" role="status"></div>
 <div class="confirm-modal hidden" id="confirmModal"><div class="confirm-box"><h3 id="confirmTitle">Nachricht löschen?</h3><p id="confirmText">Diese Aktion kann nicht rückgängig gemacht werden.</p><div class="confirm-actions"><button class="secondary-button" id="confirmCancel">Abbrechen</button><button class="danger-button" id="confirmAccept">Löschen</button></div></div></div>
 <script>
@@ -199,9 +206,11 @@ async function connectCloudKit(config) {
   if (!config?.enabled || config.containerIdentifier!=='iCloud.com.example.MoodBadge' ||
       !['development','production'].includes(config.environment) || !config.apiToken) throw new Error('CloudKit ist noch nicht eingerichtet.');
   await loadSDK();
+  const returnedAuth=window.WORKBADGE_RETURNED_AUTH;
+  delete window.WORKBADGE_RETURNED_AUTH;
   window.CloudKit.configure({locale:'de-de',containers:[{
     containerIdentifier:config.containerIdentifier,environment:config.environment,
-    apiTokenAuth:{apiToken:config.apiToken,persist:false,
+    apiTokenAuth:{apiToken:config.apiToken,persist:false,...(returnedAuth?{ckWebAuthToken:returnedAuth}:{}),
       signInButton:{id:'apple-sign-in-button',theme:'black'},signOutButton:{id:'apple-sign-out-button',theme:'black'}}
   }]});
   const container=window.CloudKit.getDefaultContainer();
@@ -226,6 +235,21 @@ async function connectCloudKit(config) {
     async remove(id){await repository.remove(id);await refresh();},
     signOut(){document.querySelector('#apple-sign-out-button button')?.click();}
   };
+}
+
+async function prepareSameTabSignIn(config) {
+  // Apple's documented Web Services challenge. The token is sent only to Apple.
+  const endpoint='https://api.apple-cloudkit.com/database/1/'+encodeURIComponent(config.containerIdentifier)+
+    '/'+config.environment+'/public/users/current?ckAPIToken='+encodeURIComponent(config.apiToken);
+  const response=await fetch(endpoint,{credentials:'omit',cache:'no-store',redirect:'error'});
+  const result=await response.json();
+  if(result.serverErrorCode!=='AUTHENTICATION_REQUIRED'||typeof result.redirectURL!=='string')
+    throw new Error('Apple-Anmeldung konnte nicht vorbereitet werden. Bitte erneut verbinden.');
+  const url=new URL(result.redirectURL);
+  if(url.protocol!=='https:'||url.username||url.password||
+    !['apple.com','icloud.com'].some(host=>url.hostname===host||url.hostname.endsWith('.'+host)))
+    throw new Error('Unbekanntes Apple-Anmeldeziel.');
+  const link=$('appleSameTabSignIn');link.href=url.href;link.classList.remove('hidden');
 }
 
 const $=(id)=>document.getElementById(id);
@@ -304,7 +328,12 @@ async function initCloudKit(){
           $('authError').textContent='Nachrichtenzugriff nicht bestätigt: '+error.message;
           $('authError').classList.remove('hidden');
         });
-      }else{$('connectionStatus').textContent='● Apple-Anmeldung erforderlich';}
+      }else{
+        $('connectionStatus').textContent='● Apple-Anmeldung erforderlich';
+        prepareSameTabSignIn(config).catch(error=>{
+          $('authError').textContent=error.message;$('authError').classList.remove('hidden');
+        });
+      }
     });
   }catch(error){$('authError').textContent=error.message;$('authError').classList.remove('hidden');$('connectionStatus').textContent='● Verbindung fehlgeschlagen';}
 }
