@@ -21,6 +21,37 @@ einer Zone eindeutig sein. Entwürfe heißen jetzt `draft-<id>`, öffentliche Mi
 - `createdAt`, `updatedAt`, `startAt`, `endAt`: Date/Time; die letzten beiden optional.
 - QUERYABLE-Indizes für `recordName`, `status`, `audience` bereitstellen.
 
+## Browser-Verbindung ohne veröffentlichten Token
+
+Unter Einstellungen wird der vorhandene, auf `https://admin.workbadge.de` beschränkte
+Web-API-Token für den geöffneten Tab eingegeben. Er wird nur an Apples API gesendet;
+kein Token ist im Repository, in Cookies, localStorage oder sessionStorage hinterlegt.
+Nach Schließen oder Neuladen muss der Web-Token erneut eingegeben werden.
+Die Apple-Anmeldung erfolgt im selben Tab. Ihr kurzlebiger Rückgabeparameter wird
+vor dem Laden externer Ressourcen aus der Adresszeile entfernt und nur im Arbeitsspeicher
+an CloudKit JS übergeben. In der CloudKit-Konsole ist URL Redirect auf
+`https://admin.workbadge.de/` eingestellt.
+
+Vor dem Anmelden prüft die Seite den anonymen öffentlichen Abruf und die Verweigerung
+anonymer Entwurfsabfragen. Nach der Anmeldung werden zusätzlich beide Datensatztypen
+mit den Rechten des angemeldeten Kontos abgefragt. Schreibaktionen bleiben bis zu
+bestandenen Prüfungen gesperrt; die tatsächlichen Rechte erzwingt weiterhin CloudKit.
+
+In der Console bestätigt: Nachrichtentypen und WorkBadgeAdmin-Rolle in Development
+vorhanden, World nur Leserecht für WorkBadgeAnnouncement, keine allgemeinen
+Schreibrechte auf Nachrichtentypen. Der fehlende audience-Index wurde ergänzt.
+In Production ist bislang nur der Users-Typ vorhanden. Eine vollständige
+Schema-Übernahme würde auch die vorher vorhandenen BingoGame/BingoPlayer-Typen
+und deren Rechte übernehmen; diese Freigabe wurde noch nicht durchgeführt.
+
+Live gegen Apple geprüft: Der anonyme Abruf veröffentlichter Nachrichten mit den
+Filtern `status == published` und `audience == all` funktioniert (derzeit 0 Datensätze).
+Die anonyme Abfrage von WorkBadgeAnnouncementDraft wird abgewiesen.
+Ein authentifizierter Schreibtest wurde noch nicht durchgeführt: Die zusätzliche
+Apple-Anmeldung für die Admin-Website ist offen. Der erste Anmeldeversuch scheiterte
+bei Apples altem Post-Message-Rückgabehelfer; der frische Versuch mit gespeicherter
+URL-Rückleitung wartet auf die Benutzeranmeldung.
+
 ## CloudKit-Berechtigungen (vor Freigabe prüfen)
 
 | Datensatztyp | World | Authenticated/Creator | WorkBadgeAdmin |
@@ -35,7 +66,7 @@ Ein clientseitiger `writesEnabled`-Schalter ersetzt diese Serverrechte nicht.
 
 Den Web-API-Token auf den Origin `https://admin.workbadge.de` begrenzen.
 Keine Server-Schlüssel oder privaten Schlüssel im öffentlichen Repository hinterlegen.
-Vor dem Aktivieren von `enabled` und `writesEnabled`: Abruf mit Admin-Anmeldung,
+Vor dem Freischalten der Schreibaktionen: Abruf mit Admin-Anmeldung,
 anonymer Abruf öffentlicher Inhalte, Verweigerung von Entwurfsabruf und Schreibversuchen
 ohne Admin-Rolle prüfen. Neue Zugriffsrechte und Tokens erst nach ausdrücklicher Freigabe
 einrichten. Schema und Rollen vor einer App-Store-/TestFlight-Nutzung in Production prüfen.
