@@ -105,7 +105,8 @@ function fromRecord(record) {
     m[k]=value==null ? null : (typeof value==='number' && Number.isFinite(value) ? new Date(value).toISOString() : 'invalid');
   }
   validateMessage(m);
-  if (record.recordName!==m.id || record.fields?.priority?.value!==PRIORITIES[m.kind]) throw new Error('Inkonsistenter CloudKit-Datensatz.');
+  const expectedName=record.recordType===ADMIN_TYPE ? 'draft-'+m.id : m.id;
+  if (![ADMIN_TYPE,PUBLIC_TYPE].includes(record.recordType) || record.recordName!==expectedName || record.fields?.priority?.value!==PRIORITIES[m.kind]) throw new Error('Inkonsistenter CloudKit-Datensatz.');
   return {...m,_draftTag:record.recordChangeTag};
 }
 
@@ -127,7 +128,7 @@ function createMessageRepository(db,{writesEnabled=false}={}) {
     const records=r.records||[];
     if (new Set(records.map(x=>x.recordName)).size!==records.length) throw new Error('Doppelte Nachrichten-IDs.');
     records.forEach(fromRecord);
-    return new Map(records.map(x=>[x.recordName,x]));
+    return new Map(records.map(x=>[fromRecord(x).id,x]));
   }
   async function list() {
     const [a,p]=await Promise.all([query(ADMIN_TYPE),query(PUBLIC_TYPE)]);
@@ -144,11 +145,13 @@ function createMessageRepository(db,{writesEnabled=false}={}) {
   }
   function allowWrites() { if (!writesEnabled) throw new Error('Schreibzugriff ist bis zum bestandenen Berechtigungstest gesperrt.'); }
   async function saveRecord(type,m,tag) {
-    const record={recordName:m.id,recordType:type,fields:toRecordFields(m)};
+    // Record IDs are unique across record types in a CloudKit zone.
+    const recordName=type===ADMIN_TYPE ? 'draft-'+m.id : m.id;
+    const record={recordName,recordType:type,fields:toRecordFields(m)};
     if (tag) record.recordChangeTag=tag;
     const r=checked(await db.saveRecords(record));
     const saved=r.records?.[0];
-    if (!saved || saved.recordName!==m.id) throw new Error('CloudKit hat die Speicherung nicht bestätigt.');
+    if (!saved || saved.recordName!==recordName) throw new Error('CloudKit hat die Speicherung nicht bestätigt.');
     return saved;
   }
   async function withdraw(id) {
@@ -175,7 +178,7 @@ function createMessageRepository(db,{writesEnabled=false}={}) {
       allowWrites(); if (!/^[a-zA-Z0-9_-]{1,100}$/.test(id)) throw new Error('Ungültige ID.');
       await withdraw(id);
       const r=adminRecords.get(id);
-      if (r) { checked(await db.deleteRecords({recordName:id,recordChangeTag:r.recordChangeTag}));adminRecords.delete(id); }
+      if (r) { checked(await db.deleteRecords({recordName:r.recordName,recordChangeTag:r.recordChangeTag}));adminRecords.delete(id); }
     }
   };
 }
@@ -295,3 +298,4 @@ async function initCloudKit(){
 </script>
 </body>
 </html>
+
