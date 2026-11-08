@@ -69,6 +69,7 @@ URL-Rückleitung wartet auf die Benutzeranmeldung.
 | --- | --- | --- | --- |
 | WorkBadgeAnnouncement | Lesen | Keine zusätzlichen Schreibrechte | Lesen, Erstellen, Ändern |
 | WorkBadgeAnnouncementDraft | Kein Zugriff | Kein Zugriff | Lesen, Erstellen, Ändern |
+| WorkBadgeFeatureFlag | Lesen | Keine zusätzlichen Schreibrechte | Lesen, Erstellen, Ändern |
 
 Nur das ausdrücklich bestimmte Administrator-iCloud-Konto der Rolle WorkBadgeAdmin
 zuweisen. Andere CloudKit-Datensatztypen (z.B. Bingo) nicht verändern.
@@ -103,3 +104,36 @@ Xcode-/iPhone-Tests und ein echter Admin→CloudKit→iPhone-Test bleiben separa
 Für den echten Versandtest zuerst eine zeitlich begrenzte Testnachricht in Development
 veröffentlichen, mit der aktualisierten Debug-App abrufen und wieder archivieren.
 Nicht ohne abgestimmten Inhalt einen Test an alle Production-Nutzer senden.
+
+## Steuerung: Funktionen pausieren oder sperren
+
+Der Bereich „Steuerung“ der Admin-Seite schaltet Funktionen der App aus, ohne dass die App neu
+veröffentlicht werden muss. Die Schalter liegen als Datensatztyp `WorkBadgeFeatureFlag` in der
+Public Database. Die App liest sie nur; geschrieben wird mit der Rolle WorkBadgeAdmin.
+
+CloudKit-Einrichtung (einmal, zuerst in Development):
+
+- Datensatztyp `WorkBadgeFeatureFlag` mit den Feldern `key` (String), `state` (String),
+  `reason` (String), `until` (Date/Time, optional), `updatedAt` (Date/Time).
+  In Development legt CloudKit den Typ beim ersten Speichern an.
+- QUERYABLE-Index für `recordName`.
+- Rechte: World nur Lesen, WorkBadgeAdmin Lesen/Erstellen/Ändern (siehe Tabelle oben).
+- In Production den Typ per Schema-Deploy übernehmen. Das vollständige Deploy würde auch die
+  Bingo-Typen übernehmen; dafür gilt weiter die ausstehende Freigabe.
+
+Datensätze: `recordName` ist `flag-<key>`. Schlüssel: `messages`, `games`, `badgebuddies`,
+`encounters`, `bingo`, `memory`. Fehlt ein Datensatz, ist die Funktion an.
+
+`state`: `on`, `paused` (vorübergehend, `until` optional) oder `locked` (bis zur Entwarnung).
+
+Vertrag für die App (muss noch umgesetzt werden):
+
+- Beim Start und beim Öffnen der Funktion alle `WorkBadgeFeatureFlag` abfragen.
+- Eine Funktion ist aus, wenn `state` nicht `on` ist und `until` leer oder in der Zukunft liegt.
+  Ein Spiel ist aus, wenn `games` oder sein eigener Schalter aus ist.
+- `messages` aus: keine In-App-Nachrichten anzeigen.
+- `reason` als Hinweis anzeigen. Ohne Text einen neutralen Satz verwenden.
+- Ist der Abruf nicht möglich (offline), die zuletzt bekannten Werte behalten, nie alles sperren.
+- Bei einer gesperrten Funktion ein laufendes Spiel sauber beenden und nichts mehr zählen.
+
+Bis die App diese Datensätze liest, ändern die Schalter nur CloudKit und nicht das Verhalten der App.
