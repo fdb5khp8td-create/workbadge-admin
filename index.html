@@ -37,6 +37,8 @@
 .status-paused{background:#fff1df;color:#b17930}
 .status-locked{background:#fbe6e3;color:#b4412f}
 .flag-controls button[disabled],.flag-controls input[disabled],.flag-controls select[disabled]{opacity:.5;cursor:default}
+.note-row{display:flex;gap:8px;flex-wrap:wrap;padding:0 21px 16px}
+.note-row input{flex:1;min-width:220px;border:1px solid #dae5dc;border-radius:9px;padding:10px;font:inherit;font-size:12px;background:#fff;color:var(--ink)}
 .flag-notice{margin:0 21px 14px;padding:12px 14px;border-radius:10px;background:#fff7e8;color:#8a6420;font-size:12px;line-height:1.6}
 .flag-error{background:#fbe6e3;color:#9c3a2a}
 @media(max-width:880px){.flag-row{grid-template-columns:minmax(0,1fr)}.flag-controls{justify-content:flex-start}.flag-controls input{width:100%}}
@@ -68,11 +70,12 @@
       </div>
       <div class="view hidden" id="view-messages"><div class="headingline"><div><div class="eyebrow">NACHRICHTENMANAGEMENT</div><h1>Alle Nachrichten</h1><p>Bearbeite, veröffentliche oder pausiere deine Mitteilungen.</p></div><button class="primary-button" data-nav="compose">＋ Neue Nachricht</button></div><div class="panel message-panel"><div class="toolbar"><div class="tabs" id="filterTabs"><button class="tab active" data-filter="all">Alle</button><button class="tab" data-filter="live">Aktiv</button><button class="tab" data-filter="scheduled">Geplant</button><button class="tab" data-filter="draft">Entwürfe</button><button class="tab" data-filter="archived">Archiv</button></div><div class="searchbox">⌕ <input id="messageSearch" placeholder="Nachricht suchen ..." aria-label="Nachrichten suchen" /></div></div><div class="table-scroll"><table><thead><tr><th>NACHRICHT</th><th>ZIELGRUPPE</th><th>STATUS</th><th>START</th><th>AKTION</th></tr></thead><tbody id="messageRows"></tbody></table></div><div id="emptyRows" class="empty-state hidden">Keine Nachrichten gefunden.</div></div></div>
       <div class="view hidden" id="view-compose"><div class="headingline composeheading"><div><div class="eyebrow">NACHRICHTENEDITOR</div><h1 id="composeTitle">Neue Nachricht</h1><p>Gestalte einen Hinweis und sieh sofort, wie er in der App wirkt.</p></div><button class="subtle-button" data-nav="messages">← Zur Übersicht</button></div><div class="editor-grid"><div class="panel form-panel"><div class="form-section-title"><span class="section-num">01</span><div><h3>Nachrichteninhalt</h3><p>Was sollen deine Nutzer erfahren?</p></div></div><div class="field"><label for="f-title">Titel <span id="titleCounter">0 / 80</span></label><input id="f-title" maxlength="80" placeholder="z. B. Neues Update verfügbar" /></div><div class="field"><label for="f-body">Nachricht <span id="bodyCounter">0 / 320</span></label><textarea id="f-body" maxlength="320" rows="4" placeholder="Schreibe hier deine Nachricht ..."></textarea></div><div class="field-row"><div class="field"><label for="f-type">Nachrichtentyp</label><select id="f-type"><option value="news">✦ Neuigkeiten</option><option value="update">↗ Update</option><option value="maintenance">⚙ Wartung</option><option value="important">! Wichtig</option></select></div><div class="field"><label for="f-audience">Zielgruppe</label><select id="f-audience"><option value="all">Alle Nutzer</option><option value="beta">Beta-Tester</option></select></div></div><div class="form-divider"></div><div class="form-section-title"><span class="section-num">02</span><div><h3>Darstellung & Zeitplan</h3><p>Bestimme, wann und wie der Hinweis erscheint.</p></div></div><div class="field-row"><div class="field"><label for="f-placement">Darstellung</label><select id="f-placement"><option value="banner">Banner oben</option><option value="card">Hinweiskarte</option></select></div><div class="field"><label for="f-dismiss">Nach dem Schließen</label><select id="f-dismiss"><option value="once">Nicht erneut anzeigen</option><option value="session">In nächster Sitzung wieder</option></select></div></div><div class="field-row"><div class="field"><label for="f-start">Sichtbar ab <small>(optional)</small></label><input id="f-start" type="datetime-local" /></div><div class="field"><label for="f-end">Sichtbar bis <small>(optional)</small></label><input id="f-end" type="datetime-local" /></div></div><div class="field-row"><div class="field"><label for="f-cta">Buttontext <small>(optional)</small></label><input id="f-cta" maxlength="35" placeholder="Mehr erfahren" /></div><div class="field"><label for="f-url">Link <small>(https, optional)</small></label><input id="f-url" type="url" placeholder="https://workbadge.de/" /></div></div><div class="form-actions"><button class="delete-button hidden" id="deleteBtn">Löschen</button><button class="secondary-button" id="saveDraft">Entwurf speichern</button><button class="primary-button" id="publishBtn">✦ Veröffentlichen</button></div><p class="form-footnote">Freigegebene Nachrichten sind öffentlich abrufbar. Start und Ende steuern die Anzeige; für vertrauliche Inhalte ist dieser Kanal ungeeignet.</p></div><div class="preview-column"><div class="preview-title"><div><h3>Live-Vorschau</h3><p>So könnte es auf dem iPhone aussehen</p></div><span class="live-tag">● LIVE PREVIEW</span></div><div class="phone"><div class="phone-screen"><div class="phone-status"><span>9:41</span><div class="island"></div><span>●● ▰</span></div><div class="phone-title"><div class="phone-logo">☺</div><b>WorkBadge</b><span>⚙</span></div><div class="preview-notice" id="phoneBanner"><div class="banner-header"><span id="phoneKind">✦ &nbsp; NEWS</span><span>×</span></div><strong id="phoneTitle">Deine Nachricht erscheint hier</strong><p id="phoneBody">Erstelle links eine Nachricht und sieh dir direkt die Vorschau an.</p><span id="phoneCTA" class="phone-cta hidden">Mehr erfahren ↗</span></div><div class="phone-label">DEIN NAMENSSCHILD</div><div class="phone-badge"><small>HELLO, MY NAME IS</small><strong>Max Mustermann</strong><span>😊 Im Büro</span></div><div class="phone-device">◉ &nbsp; Verbunden <span>Akku 82 %</span></div><button class="phone-send" disabled>Auf Schild übertragen</button><div class="phone-bottom"><span>⌂<small>Home</small></span><span>▤<small>Vorlagen</small></span><span>⚙<small>Optionen</small></span></div></div></div><div class="preview-info">ⓘ &nbsp; Dies ist eine Designvorschau. Die iPhone-App wird nicht verändert.</div></div></div></div>
-      <div class="view hidden" id="view-control"><div class="headingline"><div><div class="eyebrow">STATUS &amp; STEUERUNG</div><h1>Steuerung</h1><p>Sieh den aktuellen Stand und pausiere oder sperre Funktionen der App.</p></div><button class="secondary-button" id="flagReload" type="button">Neu laden</button></div>
-        <div class="stat-grid"><div class="stat-card"><div class="stat-title">Nachrichten aktiv <span class="stat-icon green">✦</span></div><div class="stat-number" id="ctlLive">0</div><div class="stat-foot">Jetzt in der App sichtbar</div></div><div class="stat-card"><div class="stat-title">Geplant <span class="stat-icon orange">◷</span></div><div class="stat-number" id="ctlScheduled">0</div><div class="stat-foot">Freigegeben, später sichtbar</div></div><div class="stat-card"><div class="stat-title">Pausiert <span class="stat-icon orange">⏸</span></div><div class="stat-number" id="ctlPaused">0</div><div class="stat-foot">Funktionen vorübergehend aus</div></div><div class="stat-card"><div class="stat-title">Gesperrt <span class="stat-icon gray">⛔</span></div><div class="stat-number" id="ctlLocked">0</div><div class="stat-foot">Funktionen wegen Fehler aus</div></div></div>
-        <div class="panel" style="margin-top:18px"><div class="panel-heading"><div><h3>Funktionen in der App</h3><p>Pausiert ist vorübergehend und endet automatisch. Gesperrt bleibt bis zur Entwarnung.</p></div></div>
-          <div class="flag-notice">Die Schalter werden in CloudKit als <b>WorkBadgeFeatureFlag</b> gespeichert. Die App muss sie noch auslesen. Bis dahin ändern sie nur den Datensatz und nicht das Verhalten der App.</div>
+      <div class="view hidden" id="view-control"><div class="headingline"><div><div class="eyebrow">STATUS &amp; STEUERUNG</div><h1>Steuerung</h1><p>Sieh den aktuellen Stand und pausiere oder sperre Spiele der App.</p></div><button class="secondary-button" id="flagReload" type="button">Neu laden</button></div>
+        <div class="stat-grid"><div class="stat-card"><div class="stat-title">Nachrichten aktiv <span class="stat-icon green">✦</span></div><div class="stat-number" id="ctlLive">0</div><div class="stat-foot">Jetzt in der App sichtbar</div></div><div class="stat-card"><div class="stat-title">Geplant <span class="stat-icon orange">◷</span></div><div class="stat-number" id="ctlScheduled">0</div><div class="stat-foot">Freigegeben, später sichtbar</div></div><div class="stat-card"><div class="stat-title">Spiele pausiert <span class="stat-icon orange">⏸</span></div><div class="stat-number" id="ctlPaused">0</div><div class="stat-foot">Vorübergehend aus</div></div><div class="stat-card"><div class="stat-title">Spiele gesperrt <span class="stat-icon gray">⛔</span></div><div class="stat-number" id="ctlLocked">0</div><div class="stat-foot">Bis zur Freigabe aus</div></div></div>
+        <div class="panel" style="margin-top:18px"><div class="panel-heading"><div><h3>Spiele in der App</h3><p>Pausiert endet automatisch. Gesperrt bleibt, bis du freigibst. Der Spielstand bleibt erhalten.</p></div></div>
+          <div class="flag-notice">Das ist derselbe Schalter wie in der WB Admin-App (Datensatz <b>games</b>). Die App liest ihn beim Öffnen und alle 5 Minuten. Es gilt die CloudKit-Umgebung, mit der du dich verbunden hast: Development für Testbuilds, Production für App Store und TestFlight.</div>
           <div class="flag-notice flag-error hidden" id="flagError" role="alert"></div>
+          <div class="note-row"><input id="gameNote" maxlength="200" placeholder="Hinweistext für alle pausierten oder gesperrten Spiele (leer = Standardtext der App)" aria-label="Hinweistext" disabled><button type="button" class="secondary-button" id="gameNoteSave" disabled>Hinweis speichern</button></div>
           <div class="flag-list" id="flagRows"><div class="empty-state">Verbinde CloudKit und melde dich an, um den Stand zu laden.</div></div></div></div>
       <div class="view hidden" id="view-settings"><div class="headingline"><div><div class="eyebrow">VERBINDUNG & SICHERHEIT</div><h1>Einstellungen</h1><p>Der technische Status deiner Nachrichtenzentrale.</p></div></div><div class="panel setting-card" id="connectionSetup" style="margin-bottom:18px"><h3>CloudKit für diese Sitzung verbinden</h3><p>Der Web-Token bleibt nur in diesem Browser-Tab (Sitzungsspeicher, gelöscht beim Schließen des Tabs), damit die Apple-Anmeldung nach der Weiterleitung automatisch weiterläuft. Er steht nicht im Repository. Apple-Anmeldung und CloudKit-Rollen schützen den Zugriff.</p><form id="cloudkitSessionForm" autocomplete="off"><div class="field-row"><div class="field"><label for="cloudkitSessionToken">CloudKit-Web-Token</label><input id="cloudkitSessionToken" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" required maxlength="64" aria-describedby="sessionTokenHint"></div><div class="field"><label for="cloudkitEnvironment">Umgebung</label><select id="cloudkitEnvironment" aria-describedby="sessionTokenHint"><option value="development">Development · Xcode-Testbuild</option><option value="production">Production · App Store / TestFlight</option></select></div></div><p id="sessionTokenHint">Die App liest dieselbe Umgebung, mit der sie signiert ist: aus Xcode installiert = Development, aus App Store oder TestFlight = Production.</p><button type="submit" class="primary-button" id="cloudkitSessionConnect">Mit CloudKit verbinden</button><button type="button" class="secondary-button hidden" id="cloudkitSessionEnd" style="margin-left:8px">Sitzung trennen</button><span id="cloudkitSessionStatus" role="status" style="margin-left:12px"></span></form><button type="button" id="publicReadCheck" class="secondary-button">Öffentlichen App-Abruf prüfen</button><p id="publicReadResult" role="status"></p></div><div class="settings-grid"><div class="panel setting-card"><span class="setting-symbol">◈</span><h3>Apple CloudKit</h3><p id="cloudkitStatusText">Noch nicht verbunden. Die Einrichtung ist vorbereitet; es wurden keine Nachrichten veröffentlicht.</p><div class="settings-badge" id="connectionStatus">● Nicht verbunden</div><button class="secondary-button" id="reloadBtn">Verbindung neu prüfen</button></div><div class="panel setting-card"><span class="setting-symbol">♙</span><h3>Administrator-Zugang</h3><p>Apple-Anmeldung und die CloudKit-Rolle WorkBadgeAdmin schützen den Zugriff. Nur dein zugewiesenes iCloud-Konto soll schreiben dürfen.</p><button class="secondary-button hidden" id="logoutBtn">Abmelden</button><div class="settings-badge">🔒 Rechte noch zu prüfen</div></div><div class="panel setting-card"><span class="setting-symbol">⇩</span><h3>Datensicherung</h3><p>Exportiere deine Nachrichten in eine JSON-Datei, beispielsweise vor Änderungen an deiner Datenbank.</p><button class="secondary-button" id="exportBtn">JSON exportieren ↓</button></div><div class="panel setting-card"><span class="setting-symbol">ℹ</span><h3>App-Schnittstelle</h3><p>Die WorkBadge-App liest ab Version 1.34.1 veröffentlichte Nachrichten direkt aus CloudKit, sobald sie geöffnet wird. Sie sieht nur Nachrichten der Umgebung, mit der sie gebaut wurde.</p><div class="settings-badge">App ab 1.34.1 · CloudKit</div></div></div></div>
     </div>
@@ -225,56 +228,68 @@ function createMessageRepository(db,{writesEnabled=false}={}) {
   };
 }
 
-const FLAG_TYPE = 'WorkBadgeFeatureFlag';
-const FLAG_KEYS = ['messages','games','badgebuddies','encounters','bingo','memory'];
-const FLAG_STATES = ['on','paused','locked'];
-const flagRecordName = (key)=>'flag-'+key;
+// Games switch: same record and encoding as the app (iOS/Shared/GameAvailability.swift).
+// blocked = "bingo,encounters,lock:bingo,until:encounters:<unix seconds>"
+const GAME_TYPE = 'WorkBadgeGameSwitch';
+const GAME_RECORD = 'games';
+const GAME_NOTE_LIMIT = 200;
+const GAME_IDS = ['encounters','bingo','buddy','memory'];
 
-function validateFlag(f) {
-  if (!f || !FLAG_KEYS.includes(f.key) || !FLAG_STATES.includes(f.state)) throw new Error('Ungültiger Schalter.');
-  if (typeof f.reason!=='string' || f.reason.length>140) throw new Error('Hinweistext zu lang (höchstens 140 Zeichen).');
-  if (f.until!=null && (typeof f.until!=='string' || !Number.isFinite(Date.parse(f.until)))) throw new Error('Ungültiges Datum.');
-  if (f.until && f.state!=='paused') throw new Error('Nur eine Pause kann ein Ende haben.');
-  return f;
+function parseGames(text) {
+  const tokens=String(text||'').split(',').map(x=>x.trim()).filter(Boolean);
+  const all=new Set(tokens.filter(t=>GAME_IDS.includes(t)));
+  const locked=new Set(), ends={};
+  for (const t of tokens) {
+    const p=t.split(':');
+    if (p.length===2 && p[0]==='lock' && all.has(p[1])) locked.add(p[1]);
+    if (p.length===3 && p[0]==='until' && all.has(p[1])) {
+      const sec=Number(p[2]);
+      if (Number.isFinite(sec) && sec>=0 && sec<=253402300799) ends[p[1]]=sec;
+    }
+  }
+  const paused=new Set([...all].filter(id=>!locked.has(id)));
+  for (const id of Object.keys(ends)) if (!paused.has(id)) delete ends[id];
+  return {paused,locked,ends};
 }
-function flagToFields(f) {
-  validateFlag(f);
-  const fields={key:{value:f.key,type:'STRING'},state:{value:f.state,type:'STRING'},
-    reason:{value:f.reason,type:'STRING'},updatedAt:{value:Date.now(),type:'TIMESTAMP'}};
-  // An optional end is omitted, never sent as null; a replace clears it in CloudKit.
-  if (f.until) fields.until={value:Date.parse(f.until),type:'TIMESTAMP'};
-  return fields;
+function encodeGames(p) {
+  const all=[...new Set([...p.paused,...p.locked])].filter(id=>GAME_IDS.includes(id)).sort();
+  const locks=[...p.locked].filter(id=>all.includes(id)).sort().map(id=>'lock:'+id);
+  const until=Object.keys(p.ends).sort().filter(id=>p.paused.has(id)&&!p.locked.has(id)).map(id=>'until:'+id+':'+Math.floor(p.ends[id]));
+  return [...all,...locks,...until].join(',');
 }
-function flagFromRecord(r) {
-  const until=r.fields?.until?.value, upd=r.fields?.updatedAt?.value;
-  const f={key:r.fields?.key?.value,state:r.fields?.state?.value,reason:r.fields?.reason?.value??'',
-    until:until==null?null:(Number.isFinite(until)?new Date(until).toISOString():'invalid'),
-    updatedAt:Number.isFinite(upd)?new Date(upd).toISOString():null};
-  validateFlag(f);
-  if (r.recordType!==FLAG_TYPE || r.recordName!==flagRecordName(f.key)) throw new Error('Inkonsistenter Schalter-Datensatz.');
-  return f;
+function gameMode(p,id,now=Date.now()) {
+  if (p.locked.has(id)) return 'locked';
+  if (p.paused.has(id) && (p.ends[id]==null || p.ends[id]*1000>now)) return 'paused';
+  return 'available';
 }
-function createFlagRepository(db,{writesEnabled=false}={}) {
-  let records=new Map();
+function setGameMode(p,id,mode,untilMs) {
+  const n={paused:new Set(p.paused),locked:new Set(p.locked),ends:{...p.ends}};
+  n.paused.delete(id); n.locked.delete(id); delete n.ends[id];
+  if (mode==='locked') n.locked.add(id);
+  if (mode==='paused') { n.paused.add(id); if (untilMs) n.ends[id]=Math.floor(untilMs/1000); }
+  return n;
+}
+function createGameRepository(db,{writesEnabled=false}={}) {
+  let record=null;
   return {
     async list() {
-      const r=checked(await db.performQuery({recordType:FLAG_TYPE},{resultsLimit:50}));
-      if (r.continuationMarker || r.moreComing) throw new Error('Unerwartet viele Schalter.');
-      const next=new Map(), out={};
-      for (const rec of r.records||[]) { const f=flagFromRecord(rec); next.set(f.key,rec); out[f.key]=f; }
-      records=next;
-      return out;
+      const r=checked(await db.performQuery({recordType:GAME_TYPE},{resultsLimit:20}));
+      record=(r.records||[]).find(x=>x.recordName===GAME_RECORD)||null;
+      return {policy:parseGames(record?.fields?.blocked?.value??''),note:record?.fields?.note?.value??'',exists:Boolean(record)};
     },
-    async set(f) {
+    async save(policy,note) {
       if (!writesEnabled) throw new Error('Schreibzugriff ist bis zum bestandenen Berechtigungstest gesperrt.');
-      const record={recordName:flagRecordName(f.key),recordType:FLAG_TYPE,fields:flagToFields(f)};
-      const prev=records.get(f.key);
+      const clean=String(note||'').trim().slice(0,GAME_NOTE_LIMIT);
+      const fields={blocked:{value:encodeGames(policy),type:'STRING'},updatedAt:{value:Date.now(),type:'TIMESTAMP'}};
+      // An empty note is omitted; a replace clears it and the app shows its standard text.
+      if (clean) fields.note={value:clean,type:'STRING'};
+      const rec={recordName:GAME_RECORD,recordType:GAME_TYPE,fields};
       let r;
-      if (prev) { record.recordChangeTag=prev.recordChangeTag; r=checked(await db.newRecordsBatch().replace(record).commit()); }
-      else r=checked(await db.saveRecords(record));
+      if (record) { rec.recordChangeTag=record.recordChangeTag; r=checked(await db.newRecordsBatch().replace(rec).commit()); }
+      else r=checked(await db.saveRecords(rec));
       const saved=r.records?.[0];
-      if (!saved || saved.recordName!==record.recordName) throw new Error('CloudKit hat die Speicherung nicht bestätigt.');
-      records.set(f.key,saved);
+      if (!saved || saved.recordName!==GAME_RECORD) throw new Error('CloudKit hat die Speicherung nicht bestätigt.');
+      record=saved;
     }
   };
 }
@@ -304,7 +319,7 @@ async function connectCloudKit(config) {
   }]});
   const container=window.CloudKit.getDefaultContainer();
   const repository=createMessageRepository(container.publicCloudDatabase,config);
-  const flagRepository=createFlagRepository(container.publicCloudDatabase,config);
+  const gameRepository=createGameRepository(container.publicCloudDatabase,config);
   let user=await container.setUpAuth(), authCallback=null, rowCallback=null,errorCallback=null,busy=false,version=0;
   async function refresh() {
     if (!user||busy||!rowCallback) return;
@@ -324,9 +339,9 @@ async function connectCloudKit(config) {
     async save(m){await repository.save(m);await refresh();},
     async remove(id){await repository.remove(id);await refresh();},
     signOut(){document.querySelector('#apple-sign-out-button .apple-auth-button')?.click();},
-    flags:{
-      list(){ if(!user) throw new Error('Nicht angemeldet.'); return flagRepository.list(); },
-      async set(f){ if(!user) throw new Error('Nicht angemeldet.'); await flagRepository.set(f); }
+    games:{
+      list(){ if(!user) throw new Error('Nicht angemeldet.'); return gameRepository.list(); },
+      async save(policy,note){ if(!user) throw new Error('Nicht angemeldet.'); await gameRepository.save(policy,note); }
     },
     refresh
   };
@@ -383,10 +398,10 @@ function dateText(s){return s?new Date(s).toLocaleString('de-DE',{day:'2-digit',
 function toLocalValue(s){if(!s)return '';const d=new Date(s);if(isNaN(d))return '';const local=new Date(d.getTime()-d.getTimezoneOffset()*60000);return local.toISOString().slice(0,16);}
 function fromLocal(s){return s?new Date(s).toISOString():null;}
 function notify(txt){const t=$('toast');t.textContent=txt;t.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.add('hidden'),3500);}
-function showView(which){all('.view').forEach(el=>el.classList.toggle('hidden',el.id!=='view-'+which));all('[data-nav]').forEach(el=>el.classList.toggle('active',el.classList.contains('nav-btn')&&el.dataset.nav===which));$('crumbLabel').textContent=({overview:'Übersicht',messages:'Nachrichten',compose:'Nachricht erstellen',settings:'Einstellungen',control:'Steuerung'})[which];if(which==='compose'&&!editing.id)resetEditor();if(which==='messages')renderTable();if(which==='control'){renderFlags();loadFlags();}window.scrollTo({top:0,behavior:'instant'});}
+function showView(which){all('.view').forEach(el=>el.classList.toggle('hidden',el.id!=='view-'+which));all('[data-nav]').forEach(el=>el.classList.toggle('active',el.classList.contains('nav-btn')&&el.dataset.nav===which));$('crumbLabel').textContent=({overview:'Übersicht',messages:'Nachrichten',compose:'Nachricht erstellen',settings:'Einstellungen',control:'Steuerung'})[which];if(which==='compose'&&!editing.id)resetEditor();if(which==='messages')renderTable();if(which==='control'){renderGames();loadGames();}window.scrollTo({top:0,behavior:'instant'});}
 function renderOverview(){const states=messages.map(statusOf);$('statTotal').textContent=messages.length;$('statLive').textContent=states.filter(x=>x==='live').length;$('statScheduled').textContent=states.filter(x=>x==='scheduled').length;$('statDraft').textContent=states.filter(x=>x==='draft'||x==='pending').length;$('navCount').textContent=messages.length;const latest=[...messages].sort((a,b)=>Date.parse(b.updatedAt)-Date.parse(a.updatedAt)).slice(0,4);$('recentList').innerHTML=latest.length?latest.map(m=>`<div class="recent-item" data-edit="${safe(m.id)}"><div class="list-icon">${symbols[m.kind]||'✦'}</div><div class="recent-copy"><strong>${safe(m.title)}</strong><small>${statusText(statusOf(m))} · ${dateText(m.updatedAt)}</small></div><span class="recent-arrow">›</span></div>`).join(''):'<div class="empty-state">Noch keine Nachrichten.</div>';} 
 function renderTable(){const term=$('messageSearch').value.toLocaleLowerCase('de');const arr=[...messages].sort((a,b)=>Date.parse(b.updatedAt)-Date.parse(a.updatedAt)).filter(m=>(filter==='all'||statusOf(m)===filter) && (m.title+' '+m.body).toLocaleLowerCase('de').includes(term));$('messageRows').innerHTML=arr.map(m=>`<tr><td><strong>${safe(m.title)}</strong><small>${safe(m.body)}</small></td><td>${m.audience==='beta'?'Beta-Tester':'Alle Nutzer'}</td><td><span class="status-label status-${statusOf(m)}">${statusText(statusOf(m))}</span></td><td>${dateText(m.startAt)}</td><td><button class="table-action" data-edit="${safe(m.id)}">Bearbeiten ↗</button></td></tr>`).join('');$('emptyRows').classList.toggle('hidden',arr.length>0);}
-function renderAll(){renderOverview();renderTable();renderFlags();}
+function renderAll(){renderOverview();renderTable();renderGames();}
 function resetEditor(){editing.id=null;editing.cloudTag=null;$('composeTitle').textContent='Neue Nachricht';$('f-title').value='';$('f-body').value='';$('f-type').value='news';$('f-audience').value='all';$('f-placement').value='banner';$('f-dismiss').value='once';$('f-start').value='';$('f-end').value='';$('f-cta').value='';$('f-url').value='';$('publishBtn').textContent='✦ Veröffentlichen';$('saveDraft').textContent='Entwurf speichern';$('deleteBtn').classList.add('hidden');updatePreview();}
 function editMessage(id){const m=messages.find(x=>x.id===id);if(!m)return;editing.id=id;editing.cloudTag=m._draftTag;$('composeTitle').textContent='Nachricht bearbeiten';$('f-title').value=m.title;$('f-body').value=m.body;$('f-type').value=m.kind;$('f-audience').value=m.audience;$('f-placement').value=m.placement;$('f-dismiss').value=m.dismissMode;$('f-start').value=toLocalValue(m.startAt);$('f-end').value=toLocalValue(m.endAt);$('f-cta').value=m.ctaLabel||'';$('f-url').value=m.ctaUrl||'';$('publishBtn').textContent=m.status==='published'?'✦ Änderungen veröffentlichen':'✦ Veröffentlichen';$('saveDraft').textContent=m.status==='published'?'Archivieren':'Entwurf speichern';$('deleteBtn').classList.remove('hidden');showView('compose');updatePreview();}
 function updatePreview(){const title=$('f-title').value,body=$('f-body').value,kind=$('f-type').value,placement=$('f-placement').value;$('titleCounter').textContent=title.length+' / 80';$('bodyCounter').textContent=body.length+' / 320';$('phoneTitle').textContent=title||'Deine Nachricht erscheint hier';$('phoneBody').textContent=body||'Erstelle links eine Nachricht und sieh dir direkt die Vorschau an.';$('phoneKind').textContent=(symbols[kind]||'✦')+'  '+(names[kind]||'News').toUpperCase();$('phoneBanner').className='preview-notice'+(kind==='important'?' important':'')+(kind==='maintenance'?' maintenance':'')+(placement==='card'?' card-type':'');$('phoneCTA').textContent=($('f-cta').value||'Mehr erfahren')+' ↗';$('phoneCTA').classList.toggle('hidden',!$('f-cta').value||!$('f-url').value);}
@@ -395,83 +410,81 @@ async function persist(m){if(savePending)return;savePending=true;try{if(!remote)
 function askConfirm(title,description,action,button='Bestätigen'){$('confirmTitle').textContent=title;$('confirmText').textContent=description;$('confirmAccept').textContent=button;modalAction=action;$('confirmModal').classList.remove('hidden');}
 function closeConfirm(){$('confirmModal').classList.add('hidden');modalAction=null;}
 async function archiveOrDraft(){const prev=messages.find(x=>x.id===editing.id);if(prev?.status==='published'){askConfirm('Nachricht archivieren?','Die Nachricht ist dann nicht mehr in der App sichtbar.',async()=>{const saved=formData('archived');if(saved)await persist(saved);},'Archivieren');return;}const m=formData('draft');if(m)await persist(m);}
-const FLAG_META=[
-  {key:'messages',name:'In-App-Nachrichten',desc:'Blendet alle Nachrichten in der App aus.'},
-  {key:'games',name:'Alle Spiele',desc:'Sperrt jedes Spiel auf einmal.'},
-  {key:'badgebuddies',name:'BadgeBuddies',desc:'Das Begleiter-Spiel.'},
-  {key:'encounters',name:'Begegnungen sammeln',desc:'Spiel, bei dem Begegnungen mit anderen Schildern gesammelt werden.'},
-  {key:'bingo',name:'Icebreaker-Bingo',desc:'QR-Codes scannen, Punkte sammeln, Rangliste.'},
-  {key:'memory',name:'Gedächtnisrunde',desc:'Kooperatives Spiel für 6 bis 20 Personen.'}
+const GAME_META=[
+  {id:'encounters',name:'Begegnungen',desc:'Begegnungen mit anderen Schildern sammeln.'},
+  {id:'bingo',name:'Icebreaker-Bingo',desc:'QR-Codes scannen, Punkte sammeln, Rangliste.'},
+  {id:'buddy',name:'Momo (BadgeBuddies)',desc:'Das Begleiter-Spiel.'},
+  {id:'memory',name:'Gedächtnisrunde',desc:'Kooperatives Spiel für 6 bis 20 Personen.'}
 ];
-let flags={},flagsLoaded=false,flagsError='';
-function flagEffective(f){
-  if(!f||f.state==='on')return {s:'on'};
-  if(f.state==='paused'&&f.until&&Date.parse(f.until)<=Date.now())return {s:'on',expired:true};
-  return {s:f.state};
+let gamePolicy=null,gameNote='',gamesLoaded=false,gamesError='';
+function gameLabel(id){
+  const m=gameMode(gamePolicy,id);
+  if(m==='available')return {cls:'on',text:'Verfügbar'};
+  if(m==='locked')return {cls:'locked',text:'Gesperrt'};
+  const end=gamePolicy.ends[id];
+  return {cls:'paused',text:end?'Pausiert bis '+dateText(new Date(end*1000).toISOString()):'Pausiert bis auf Weiteres'};
 }
-function flagLabel(f){
-  const e=flagEffective(f);
-  if(e.s==='on')return {cls:'on',text:e.expired?'Aktiv (Pause abgelaufen)':'Aktiv'};
-  if(e.s==='paused')return {cls:'paused',text:f.until?'Pausiert bis '+dateText(f.until):'Pausiert bis auf Weiteres'};
-  return {cls:'locked',text:'Gesperrt'};
-}
-function renderFlags(){
+function renderGames(){
   const states=messages.map(statusOf);
   $('ctlLive').textContent=states.filter(x=>x==='live').length;
   $('ctlScheduled').textContent=states.filter(x=>x==='scheduled').length;
+  const ready=Boolean(remote?.games)&&safetyCheckPassed;
+  const live=ready&&gamesLoaded&&gamePolicy;
   let paused=0,locked=0;
-  FLAG_META.forEach(m=>{const e=flagEffective(flags[m.key]).s;if(e==='paused')paused++;if(e==='locked')locked++;});
+  if(live)GAME_META.forEach(m=>{const k=gameMode(gamePolicy,m.id);if(k==='paused')paused++;if(k==='locked')locked++;});
   $('ctlPaused').textContent=paused;$('ctlLocked').textContent=locked;
-  $('flagError').textContent=flagsError;$('flagError').classList.toggle('hidden',!flagsError);
-  const ready=Boolean(remote?.flags)&&safetyCheckPassed;
-  const box=$('flagRows');
-  const live=ready&&(flagsLoaded||Boolean(flagsError));
-  const hint=!ready?'<div class="empty-state">Noch nicht verbunden. Verbinde unter Einstellungen CloudKit und melde dich mit Apple an. Danach sind die Schalter bedienbar.</div>':(!live?'<div class="empty-state">Stand wird geladen …</div>':'');
+  $('flagError').textContent=gamesError;$('flagError').classList.toggle('hidden',!gamesError);
   const dis=live?'':' disabled';
-  box.innerHTML=hint+FLAG_META.map(m=>{
-    const f=live?flags[m.key]:undefined,lab=live?flagLabel(f):{cls:'draft',text:'Stand unbekannt'},on=flagEffective(f).s==='on';
-    const note=!on&&f.reason?'<p class="flag-reason-note">Hinweis in der App: '+safe(f.reason)+'</p>':'';
-    const ctl=on
-      ?'<input class="flag-reason" maxlength="140" placeholder="Hinweistext für Nutzer (optional)" aria-label="Hinweistext für '+safe(m.name)+'"'+dis+'><select class="flag-dur" aria-label="Dauer der Pause"'+dis+'><option value="1h">1 Stunde</option><option value="24h">24 Stunden</option><option value="open">Bis auf Weiteres</option></select><button type="button" class="secondary-button" data-flag-act="pause"'+dis+'>Pausieren</button><button type="button" class="danger-button" data-flag-act="lock"'+dis+'>Sperren</button>'
-      :'<button type="button" class="secondary-button" data-flag-act="resume">Wieder aktivieren</button>';
-    return '<div class="flag-row" data-key="'+m.key+'"><div><h4>'+safe(m.name)+' <span class="status-label status-'+lab.cls+'">'+safe(lab.text)+'</span></h4><p>'+safe(m.desc)+'</p>'+note+'</div><div class="flag-controls">'+ctl+'</div></div>';
+  $('gameNote').disabled=!live;$('gameNoteSave').disabled=!live;
+  const noteEl=$('gameNote');
+  if(live&&document.activeElement!==noteEl&&noteEl.dataset.dirty!=='1')noteEl.value=gameNote;
+  const hint=!ready?'<div class="empty-state">Noch nicht verbunden. Verbinde unter Einstellungen CloudKit und melde dich mit Apple an. Danach sind die Schalter bedienbar.</div>':(!live&&!gamesError?'<div class="empty-state">Stand wird geladen …</div>':'');
+  $('flagRows').innerHTML=hint+GAME_META.map(m=>{
+    const lab=live?gameLabel(m.id):{cls:'draft',text:'Stand unbekannt'};
+    const free=live?gameMode(gamePolicy,m.id)==='available':true;
+    const ctl=free
+      ?'<select class="flag-dur" aria-label="Dauer der Pause"'+dis+'><option value="1h">1 Stunde</option><option value="24h">24 Stunden</option><option value="open">Bis auf Weiteres</option></select><button type="button" class="secondary-button" data-game-act="pause"'+dis+'>Pausieren</button><button type="button" class="danger-button" data-game-act="lock"'+dis+'>Sperren</button>'
+      :'<button type="button" class="secondary-button" data-game-act="resume">Wieder freigeben</button>';
+    return '<div class="flag-row" data-id="'+m.id+'"><div><h4>'+safe(m.name)+' <span class="status-label status-'+lab.cls+'">'+safe(lab.text)+'</span></h4><p>'+safe(m.desc)+'</p></div><div class="flag-controls">'+ctl+'</div></div>';
   }).join('');
 }
-async function loadFlags(){
-  if(!remote?.flags||!safetyCheckPassed){renderFlags();return;}
-  try{flags=await remote.flags.list();flagsError='';flagsLoaded=true;}
-  catch(e){
-    const msg=String(e?.message||'');
-    flagsError='Schalter konnten nicht geladen werden: '+msg;
-    if(/BAD_REQUEST|UNKNOWN_ITEM/.test(msg)){flags={};flagsLoaded=true;flagsError+=' Falls der Datensatztyp WorkBadgeFeatureFlag noch fehlt: In Development entsteht er beim ersten Speichern, in Production muss er per Schema-Deploy übernommen werden.';}
-  }
+async function loadGames(){
+  if(!remote?.games||!safetyCheckPassed){renderGames();return;}
+  try{const r=await remote.games.list();gamePolicy=r.policy;gameNote=r.note;gamesLoaded=true;gamesError='';}
+  catch(e){gamesError='Spiele-Status konnte nicht geladen werden: '+String(e?.message||'');}
   const a=document.activeElement;
-  if(!(a&&$('flagRows').contains(a)&&/INPUT|SELECT/.test(a.tagName)))renderFlags();
-  else{$('flagError').textContent=flagsError;$('flagError').classList.toggle('hidden',!flagsError);}
+  if(!(a&&$('flagRows').contains(a)&&/INPUT|SELECT/.test(a.tagName)))renderGames();
+  else{$('flagError').textContent=gamesError;$('flagError').classList.toggle('hidden',!gamesError);}
 }
-async function persistFlag(f,doneText){
+async function persistGames(policy,note,doneText){
   try{
-    if(!remote?.flags)throw new Error('CloudKit ist nicht verbunden.');
+    if(!remote?.games)throw new Error('CloudKit ist nicht verbunden.');
     if(!safetyCheckPassed)throw new Error('Der öffentliche App-Abruf ist noch nicht bestätigt.');
-    if(!flagsLoaded)await loadFlags();
-    await remote.flags.set(f);await loadFlags();notify(doneText);
-  }catch(e){notify('Speichern fehlgeschlagen: '+e.message);await loadFlags();}
+    if(!gamesLoaded)await loadGames();
+    if(!gamesLoaded)throw new Error('Der aktuelle Stand konnte nicht geladen werden.');
+    await remote.games.save(policy,note);$('gameNote').dataset.dirty='';await loadGames();notify(doneText);
+  }catch(e){notify('Speichern fehlgeschlagen: '+e.message);await loadGames();}
 }
+$('gameNote').addEventListener('input',()=>{$('gameNote').dataset.dirty='1';});
+$('gameNoteSave').addEventListener('click',()=>{
+  if(!gamePolicy)return;
+  askConfirm('Hinweistext speichern?','Der Text erscheint in der App bei allen pausierten oder gesperrten Spielen.',()=>persistGames(gamePolicy,$('gameNote').value,'Hinweistext gespeichert.'),'Speichern');
+});
 $('flagRows').addEventListener('click',e=>{
-  const b=e.target.closest('[data-flag-act]');if(!b)return;
-  const row=b.closest('.flag-row'),key=row.dataset.key,act=b.dataset.flagAct,meta=FLAG_META.find(m=>m.key===key);
+  const b=e.target.closest('[data-game-act]');if(!b||!gamePolicy)return;
+  const row=b.closest('.flag-row'),id=row.dataset.id,act=b.dataset.gameAct,meta=GAME_META.find(m=>m.id===id);
   if(!meta)return;
-  if(act==='resume'){askConfirm(meta.name+' wieder aktivieren?','Die Funktion ist danach in der App wieder verfügbar.',()=>persistFlag({key,state:'on',reason:'',until:null},meta.name+' ist wieder aktiv.'),'Aktivieren');return;}
-  const reason=row.querySelector('.flag-reason').value.trim().slice(0,140);
+  const note=$('gameNote').value;
+  if(act==='resume'){askConfirm(meta.name+' wieder freigeben?','Das Spiel ist danach in der App wieder verfügbar.',()=>persistGames(setGameMode(gamePolicy,id,'available'),note,meta.name+' ist wieder verfügbar.'),'Freigeben');return;}
   let until=null;
-  if(act==='pause'){const d=row.querySelector('.flag-dur').value;if(d!=='open')until=new Date(Date.now()+(d==='1h'?3600e3:86400e3)).toISOString();}
+  if(act==='pause'){const d=row.querySelector('.flag-dur').value;if(d!=='open')until=Date.now()+(d==='1h'?3600e3:86400e3);}
   const locking=act==='lock';
   askConfirm(meta.name+(locking?' sperren?':' pausieren?'),
-    locking?'Die Funktion wird in der App gesperrt, bis du sie wieder aktivierst.':'Die Funktion ist pausiert'+(until?' bis '+dateText(until)+'.':', bis du sie wieder aktivierst.'),
-    ()=>persistFlag({key,state:locking?'locked':'paused',reason,until},meta.name+(locking?' ist gesperrt.':' ist pausiert.')),
+    locking?'Das Spiel wird in der App gesperrt, bis du es wieder freigibst. Der Spielstand bleibt erhalten.':'Das Spiel ist pausiert'+(until?' bis '+dateText(new Date(until).toISOString())+'.':', bis du es wieder freigibst.'),
+    ()=>persistGames(setGameMode(gamePolicy,id,locking?'locked':'paused',until),note,meta.name+(locking?' ist gesperrt.':' ist pausiert.')),
     locking?'Sperren':'Pausieren');
 });
-$('flagReload').addEventListener('click',loadFlags);
+$('flagReload').addEventListener('click',loadGames);
 function exportData(){const contents=JSON.stringify({schemaVersion:1,exportedAt:new Date().toISOString(),announcements:messages},null,2);const blob=new Blob([contents],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='workbadge-nachrichten-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2500);notify('Nachrichten exportiert.');}
 function initEvents(){all('[data-nav]').forEach(btn=>btn.addEventListener('click',()=>{if(btn.dataset.nav==='compose')editing.id=null;showView(btn.dataset.nav);}));$('messageSearch').addEventListener('input',renderTable);all('.tab').forEach(t=>t.addEventListener('click',()=>{all('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');filter=t.dataset.filter;renderTable();}));document.addEventListener('click',e=>{const item=e.target.closest('[data-edit]');if(item)editMessage(item.dataset.edit);});all('.form-panel input,.form-panel select,.form-panel textarea').forEach(el=>el.addEventListener('input',updatePreview));$('publishBtn').addEventListener('click',async()=>{const m=formData('published');if(!m)return;askConfirm('Nachricht veröffentlichen?','Bei bestehender App-Anbindung ist diese Mitteilung für die gewählte Zielgruppe ab dem Startzeitpunkt abrufbar.',()=>persist(m),'Veröffentlichen');});$('saveDraft').addEventListener('click',archiveOrDraft);$('deleteBtn').addEventListener('click',()=>{const id=editing.id;if(!id)return;askConfirm('Nachricht endgültig löschen?','Diese Nachricht wird vollständig aus der Datenbank entfernt. Dieser Schritt kann nicht rückgängig gemacht werden.',async()=>{try{if(!remote)throw new Error('CloudKit ist nicht verbunden.');await remote.remove(id);editing.id=null;showView('messages');notify('Nachricht gelöscht.');}catch(e){notify('Löschen fehlgeschlagen: '+e.message)}},'Löschen');});$('confirmCancel').addEventListener('click',closeConfirm);$('confirmAccept').addEventListener('click',async()=>{const fn=modalAction;closeConfirm();if(fn)await fn();});$('confirmModal').addEventListener('click',e=>{if(e.target===$('confirmModal'))closeConfirm();});$('infoBtn').addEventListener('click',()=>notify('Veröffentlichte Nachrichten erscheinen in der App ab Version 1.34.1 beim nächsten Öffnen – in der Umgebung, die oben rechts angezeigt wird.'));$('userBtn').addEventListener('click',()=>showView('settings'));$('exportBtn').addEventListener('click',exportData);$('reloadBtn').addEventListener('click',()=>{if(remote)remote.refresh();else notify('Bitte zuerst CloudKit für diese Sitzung verbinden.');});$('logoutBtn').addEventListener('click',async()=>{if(remote)await remote.signOut();});}
 initEvents();resetEditor();
@@ -549,7 +562,7 @@ async function initCloudKit(){
     remote=await connectCloudKit(config);
     remote.onAuth(user=>{
       if(unsubscribe){unsubscribe();unsubscribe=null;}
-      flags={};flagsLoaded=false;flagsError='';
+      gamePolicy=null;gameNote='';gamesLoaded=false;gamesError='';
       writes(false);messages=[];renderAll();$('authOverlay').classList.remove('hidden');
       $('cloudUser').textContent=user?.userRecordName ? 'Deine CloudKit-Nutzer-ID: '+user.userRecordName : '';
       if(user)$('appleSameTabSignIn').classList.add('hidden');
@@ -595,7 +608,7 @@ async function initCloudKit(){
     $('cloudkitSessionStatus').textContent='Apple-Anmeldung ist zurück. Bitte den Web-Token noch einmal eintragen, um sie abzuschließen.';
   }
   initCloudKit();setInterval(()=>{renderAll();},60000);
-  setInterval(()=>{if(!$('view-control').classList.contains('hidden'))loadFlags();},30000);
+  setInterval(()=>{if(!$('view-control').classList.contains('hidden'))loadGames();},30000);
 }
 
 </script>
