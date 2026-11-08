@@ -36,6 +36,7 @@
 .status-on{background:#e4f4e5;color:#33834d}
 .status-paused{background:#fff1df;color:#b17930}
 .status-locked{background:#fbe6e3;color:#b4412f}
+.flag-controls button[disabled],.flag-controls input[disabled],.flag-controls select[disabled]{opacity:.5;cursor:default}
 .flag-notice{margin:0 21px 14px;padding:12px 14px;border-radius:10px;background:#fff7e8;color:#8a6420;font-size:12px;line-height:1.6}
 .flag-error{background:#fbe6e3;color:#9c3a2a}
 @media(max-width:880px){.flag-row{grid-template-columns:minmax(0,1fr)}.flag-controls{justify-content:flex-start}.flag-controls input{width:100%}}
@@ -424,13 +425,14 @@ function renderFlags(){
   $('flagError').textContent=flagsError;$('flagError').classList.toggle('hidden',!flagsError);
   const ready=Boolean(remote?.flags)&&safetyCheckPassed;
   const box=$('flagRows');
-  if(!ready){box.innerHTML='<div class="empty-state">Verbinde CloudKit und melde dich an, um den Stand zu laden.</div>';return;}
-  if(!flagsLoaded&&!flagsError){box.innerHTML='<div class="empty-state">Stand wird geladen …</div>';return;}
-  box.innerHTML=FLAG_META.map(m=>{
-    const f=flags[m.key],lab=flagLabel(f),on=flagEffective(f).s==='on';
+  const live=ready&&(flagsLoaded||Boolean(flagsError));
+  const hint=!ready?'<div class="empty-state">Noch nicht verbunden. Verbinde unter Einstellungen CloudKit und melde dich mit Apple an. Danach sind die Schalter bedienbar.</div>':(!live?'<div class="empty-state">Stand wird geladen …</div>':'');
+  const dis=live?'':' disabled';
+  box.innerHTML=hint+FLAG_META.map(m=>{
+    const f=live?flags[m.key]:undefined,lab=live?flagLabel(f):{cls:'draft',text:'Stand unbekannt'},on=flagEffective(f).s==='on';
     const note=!on&&f.reason?'<p class="flag-reason-note">Hinweis in der App: '+safe(f.reason)+'</p>':'';
     const ctl=on
-      ?'<input class="flag-reason" maxlength="140" placeholder="Hinweistext für Nutzer (optional)" aria-label="Hinweistext für '+safe(m.name)+'"><select class="flag-dur" aria-label="Dauer der Pause"><option value="1h">1 Stunde</option><option value="24h">24 Stunden</option><option value="open">Bis auf Weiteres</option></select><button type="button" class="secondary-button" data-flag-act="pause">Pausieren</button><button type="button" class="danger-button" data-flag-act="lock">Sperren</button>'
+      ?'<input class="flag-reason" maxlength="140" placeholder="Hinweistext für Nutzer (optional)" aria-label="Hinweistext für '+safe(m.name)+'"'+dis+'><select class="flag-dur" aria-label="Dauer der Pause"'+dis+'><option value="1h">1 Stunde</option><option value="24h">24 Stunden</option><option value="open">Bis auf Weiteres</option></select><button type="button" class="secondary-button" data-flag-act="pause"'+dis+'>Pausieren</button><button type="button" class="danger-button" data-flag-act="lock"'+dis+'>Sperren</button>'
       :'<button type="button" class="secondary-button" data-flag-act="resume">Wieder aktivieren</button>';
     return '<div class="flag-row" data-key="'+m.key+'"><div><h4>'+safe(m.name)+' <span class="status-label status-'+lab.cls+'">'+safe(lab.text)+'</span></h4><p>'+safe(m.desc)+'</p>'+note+'</div><div class="flag-controls">'+ctl+'</div></div>';
   }).join('');
